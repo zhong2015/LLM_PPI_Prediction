@@ -5,7 +5,7 @@ from haystack import Document
 
 def get_known_data(file_path):
     with open(file_path, "rb") as f:
-        data = f.read().decode("utf-8")  # 以UTF-8编码读取文件内容
+        data = f.read().decode("utf-8")  
     dataList = data.split("\n")
     dataList = [data.strip() for data in dataList if data != '']
     return dataList
@@ -38,7 +38,7 @@ def build_docs(file_path, known_template, joint_symbol="", batch_size=60, entry_
         doc_id = hash_object.hexdigest()[:10]
         doc = Document(id=doc_id, content=sample)
         docs.append(doc)
-    print("当前已收集了{0}个documents！".format(len(docs)))
+    print("Collected {0} documents！".format(len(docs)))
     return docs
 
 def get_query_entry(file_path, query_template, label_count=0):
