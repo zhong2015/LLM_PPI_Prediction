@@ -15,7 +15,7 @@ device = 'cuda' if torch.cuda.is_available() else 'cpu'
 def predict(sys_prompt, user_prompt, tokenizer, model, pattern):
     client = OpenAI(base_url="",
                     api_key="")
-    print("看看有哪些model可以选择:\n", client.models.list())
+    print("model options:\n", client.models.list())
 
     completion = client.chat.completions.create(
         model=model,
@@ -64,7 +64,7 @@ if __name__ == '__main__':
     tokenizer.pad_token = tokenizer.eos_token
     model = AutoModelForCausalLM.from_pretrained(model_path, device_map="auto", trust_remote_code=True)
 
-    file_path = "D:\\博士后期间\\稳工\\重要已读的知识\\LLM\\LLM-Codes\\LLM_SHDI\\"
+    file_path = "D:\\LLM\\LLM-Codes\\LLM_SHDI\\"
     if os.path.exists((file_path + "fail_queries.txt") and (file_path + "fail_targets.txt") and (
             file_path + "success_results.txt") and (file_path + "success_targets.txt")):
         fail_queries_rfile = open("fail_queries.txt", "r", encoding="utf8")
@@ -122,7 +122,7 @@ if __name__ == '__main__':
         targets.extend(success_targets)
 
     if success_flag:
-        print("Warning: len(predict) != len(target)") if len(results) != len(targets) else print("接下来可以进行metric的计算")
+        print("Warning: len(predict) != len(target)") if len(results) != len(targets) else print("metric computation:")
         results = np.array(results)
         targets = np.array(targets)
         rmse = RMSE(results, targets)
