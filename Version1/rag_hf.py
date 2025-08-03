@@ -59,7 +59,7 @@ if __name__ == '__main__':
     tokenizer.pad_token = tokenizer.eos_token
     model = AutoModelForCausalLM.from_pretrained(model_path, device_map="auto", trust_remote_code=True)
 
-    file_path = "D:\\博士后期间\\稳工\\重要已读的知识\\LLM\\LLM-Codes\\LLM_SHDI\\"
+    file_path = "D:\\LLM\\LLM-Codes\\LLM_SHDI\\"
     if os.path.exists((file_path + "fail_queries.txt") and (file_path + "fail_targets.txt") and (
             file_path + "success_results.txt") and (file_path + "success_targets.txt")):
         fail_queries_rfile = open("fail_queries.txt", "r", encoding="utf8")
@@ -97,17 +97,17 @@ if __name__ == '__main__':
     # document_store = ElasticsearchDocumentStore(hosts="http://localhost:9200")
     document_store = InMemoryDocumentStore(embedding_similarity_function="cosine")
     if document_store.count_documents() == 0:
-        print("当前的document_store是空的")
+        print("document_store is empty")
     else:
-        print("当前document_store中的document数目:", document_store.count_documents())
-        print("准备删除当前document_store中的所有documents...")
+        print("document count:", document_store.count_documents())
+        print("deleting all documents...")
         existing_docs = document_store.filter_documents()
         ids = []
         for doc in existing_docs:
             ids.append(doc.id)
         document_store.delete_documents(ids)
-        assert document_store.count_documents() == 0, "注意，当前document_store仍未被清空！"
-        print("删除完毕！当前document_store中的documents已被清空！")
+        assert document_store.count_documents() == 0, "document_store is not empty！"
+        print("Deleted！document_store is empty！")
 
     n_retrieves = 3
     multi_flag = True
@@ -123,7 +123,6 @@ if __name__ == '__main__':
         indexing_pipe.add_component(instance=doc_writer, name="doc_writer")
         indexing_pipe.connect("doc_embedder.documents", "doc_writer.documents")
         indexing_pipe.run({"doc_embedder": {"documents": docs}})
-        # print("当前document_store中的documents:\n", document_store.filter_documents())
     else:
         document_store.write_documents(docs)
 
@@ -179,7 +178,7 @@ if __name__ == '__main__':
         success_targets_wfile.close()
     else:
         print("Warning: len(success_results) != len(success_targets), since the predicts are:\n{0}".format(
-            success_results)) if len(success_results) != len(success_targets) else print("接下来可以进行metric的计算")
+            success_results)) if len(success_results) != len(success_targets) else print("metric computation")
         success_results = np.array(success_results)
         success_targets = np.array(success_targets)
         rmse = RMSE(success_results, success_targets)
