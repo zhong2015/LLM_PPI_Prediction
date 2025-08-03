@@ -2,7 +2,7 @@
 
 def get_known_data(file_path):
     with open(file_path, "rb") as f:
-        data = f.read().decode("utf-8")  # 以UTF-8编码读取文件内容
+        data = f.read().decode("utf-8")  
     dataList = data.split("\n")
     dataList = [data.strip() for data in dataList if data != '']
     return dataList
