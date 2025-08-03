@@ -46,7 +46,7 @@ if __name__ == '__main__':
     tokenizer.pad_token = tokenizer.eos_token
     model = AutoModelForCausalLM.from_pretrained(model_path, device_map="auto", trust_remote_code=True)
 
-    file_path = "D:\\博士后期间\\稳工\\重要已读的知识\\LLM\\LLM-Codes\\LLM_SHDI\\"
+    file_path = "D:\\LLM\\LLM-Codes\\LLM_SHDI\\"
     if os.path.exists((file_path + "fail_queries.txt") and (file_path + "fail_targets.txt") and (
             file_path + "success_results.txt") and (file_path + "success_targets.txt")):
         fail_queries_rfile = open("fail_queries.txt", "r", encoding="utf8")
