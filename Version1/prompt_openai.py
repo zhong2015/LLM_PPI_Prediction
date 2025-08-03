@@ -13,10 +13,8 @@ from metrics import RMSE, MAE, eucliDist
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
 def predict(sys_prompt, user_prompt, tokenizer, model, pattern):
-    # client = OpenAI(base_url="http://chatapi.littlewheat.com/v1",
-    #                 api_key="sk-KNAtm2OLQGWGrawWrLerq9V4aDyamaeE5W65UALAJooRdbP0")
-    client = OpenAI(base_url="https://api.deepseek.com",
-                    api_key="sk-3f42f3d36d634397970c7167863c7e69")
+    client = OpenAI(base_url="",
+                    api_key="")
     print("看看有哪些model可以选择:\n", client.models.list())
 
     completion = client.chat.completions.create(
