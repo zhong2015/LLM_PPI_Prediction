@@ -13,7 +13,7 @@ config = ProjectConfig()
 
 def get_known_data(file_path):
     with open(file_path, "rb") as f:
-        data = f.read().decode("utf-8")  # 以UTF-8编码读取文件内容
+        data = f.read().decode("utf-8")  
     dataList = data.split("\n")
     dataList = [data.strip() for data in dataList if data != '']
     return dataList
@@ -24,7 +24,7 @@ def get_ids(trainfile_path, valfile_path, template, known_template, query_templa
     val_data_list = get_known_data(valfile_path)
     train_data_list.extend(val_data_list)
     if inference_data_num > 0 and len(train_data_list) > inference_data_num:
-        print("用于推理的已知值数目=", inference_data_num)
+        print("known entry num for inference=", inference_data_num)
         inference_data_list = train_data_list[-inference_data_num:]
         train_data_list = train_data_list[:len(train_data_list) - inference_data_num]
         inference_data_wfile = open("inference_data.txt", "w", encoding="utf8")
@@ -32,9 +32,9 @@ def get_ids(trainfile_path, valfile_path, template, known_template, query_templa
         inference_data_wfile.write(inference_data_text)
         inference_data_wfile.close()
     else:
-        print("推理时将使用零样本学习！")
+        print("zero learning during the inference！")
     data_num = len(train_data_list)
-    print("用于训练和验证的已知值数目=", data_num)
+    print("known entry num for training and validation=", data_num)
     known_prompt_list = []
     entry_list = []
     label_list = []
@@ -61,7 +61,7 @@ def get_ids(trainfile_path, valfile_path, template, known_template, query_templa
                 break
     input_ids = [tokenizer.encode(text=entry, text_pair=label) for entry, label in zip(entry_list, label_list)]
     train_sample_num = int(len(input_ids) * train_ratio)
-    print("用于训练和验证的entry数目={0}, 其中，用于训练的entry数目={1}，而用于验证的entry数目={2}".format(len(input_ids),
+    print("known entry num for training and validation={0}, known entry num for training={1}，known entry num for validation={2}".format(len(input_ids),
                                                                                                          train_sample_num,
                                                                                                          len(input_ids) - train_sample_num))
     train_sample_ids = {'input_ids': input_ids[:train_sample_num]}
@@ -77,11 +77,6 @@ def collate_fn(batch):
         sample_ids = sample['input_ids']
         begin_indices = [idx for idx, word_id in enumerate(sample_ids) if word_id == tokenizer.convert_tokens_to_ids(tokenizer.bos_token)]
         entry_length = begin_indices[1] + 1
-        """
-        由于这里所使用的model是一个LlamaForCausalLM类对象，所以根据如下网址可知，将一个样本所对应label中某个位置上的索引值设为-100后，
-        那么该位置上的真实值与对应的预测值不参与损失值的计算。
-        https://huggingface.co/docs/transformers/v4.51.3/en/model_doc/llama#transformers.LlamaForCausalLM
-        """
         label_ids = [-100] * entry_length + sample_ids[entry_length:]
         labels.append(label_ids)
     if batch_size == 1:
@@ -140,7 +135,6 @@ if __name__ == '__main__':
     query_template = "Input: Row Index={0}, Column Index={1}\nAnswer: "
     label_template = "${0}$"
     """
-    此时的tokenizer是一个LlamaTokenizerFast类对象，其print输出如下所示：
     LlamaTokenizerFast(name_or_path='D:\downloaded_LLM\deepseek-math-7b-rl', vocab_size=100000, model_max_length=4096, 
                        is_fast=True, padding_side='left', truncation_side='right', 
                        special_tokens={'bos_token': '<｜begin▁of▁sentence｜>', 'eos_token': '<｜end▁of▁sentence｜>'}, 
