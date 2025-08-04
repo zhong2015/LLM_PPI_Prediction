@@ -46,7 +46,6 @@ def train_model(config, template, known_template, query_template, label_template
     )
 
     """
-    这里所使用的model是一个LlamaForCausalLM类对象，其详解可参见如下网址：
     https://huggingface.co/docs/transformers/v4.51.3/en/model_doc/llama#transformers.LlamaForCausalLM
     """
     model = AutoModelForCausalLM.from_pretrained(config.pre_model, quantization_config=nf4_config, device_map="auto", trust_remote_code=True)
@@ -54,9 +53,9 @@ def train_model(config, template, known_template, query_template, label_template
     model = peft.prepare_model_for_kbit_training(model)
 
     if config.checkpointing_flag:
-        model.gradient_checkpointing_enable()  # 开启模型的梯度检查点
-        model.enable_input_require_grads()  # 必须确保同时设置了model.enable_input_require_grads()和model.gradient_checkpointing_enable()
-        # 关闭缓存以兼容gradient checkpointing，从而压缩模型所需的内存
+        model.gradient_checkpointing_enable()  
+        model.enable_input_require_grads() 
+       
         model.config.use_cache = False
 
     train_dataloader, val_dataloader = get_dataloader(config.trainfile_path, config.valfile_path, template,
@@ -64,24 +63,14 @@ def train_model(config, template, known_template, query_template, label_template
                                                       config.train_joint_symbol, config.inference_joint_symbol,
                                                       config.inference_data_num, config.train_ratio, config.entry_size,
                                                       config.batch_size)
-    # 根据训练轮数计算最大训练步数，以便于scheduler动态调整lr
+    
     num_update_steps_per_epoch = len(train_dataloader)
-    # 指定总的训练步数，它会被学习率调度器用来确定学习率的变化规律，确保学习率在整个训练过程中得以合理地调节
+    
     max_train_steps = config.epochs * num_update_steps_per_epoch
-    # 预热阶段的训练步数
+    
     warm_steps = int(config.warmup_ratio * max_train_steps)
 
-    """
-    PEFT的介绍可参见如下网址：
-    https://huggingface.co/docs/peft/v0.15.0/en/tutorial/peft_model_config#peft-configurations-and-models
-
-    函数LoraConfig()的详解可参见如下网址：
-    https://huggingface.co/docs/peft/package_reference/lora
-
-    target_modules这个参数的设置是参见如下网址的：
-    https://blog.csdn.net/weixin_44826203/article/details/129733930
-    由该网址可知，这样的设置是选择了model中的q_proj和v_proj模块（即是attention中的q和v的部分）做LORA。
-    """
+    
     if config.lora_type == "lora" or config.lora_type == "dora":
         use_dora = False
         if config.lora_type == "dora":
@@ -97,10 +86,7 @@ def train_model(config, template, known_template, query_template, label_template
             target_modules=target_modules,
             inference_mode=False,
         )
-        """
-        函数get_peft_model()的详解可参见如下网址：
-        https://huggingface.co/docs/peft/v0.15.0/en/package_reference/peft_model#peft.get_peft_model
-        """
+       
         model = peft.get_peft_model(model, lora_config, adapter_name=config.lora_type)
     else:
         lora_config = peft.AdaLoraConfig(
@@ -115,21 +101,11 @@ def train_model(config, template, known_template, query_template, label_template
             target_modules=target_modules,
             inference_mode=False,
         )
-        """
-        出处1：https://huggingface.co/docs/transformers/main/en/peft
-        出处2：https://huggingface.co/docs/transformers/main/en/main_classes/peft#transformers.integrations.PeftAdapterMixin.enable_adapters
-        如果想兼顾device_map="auto"，那么adaLora只能通过add_adapter()来进行实现（如果adaLora要通过peft.get_peft_model()进行实现的话
-        那么上面model定义时device_map的值就不能是"auto"而要指定一个GPU，比如"cuda:0"）。
-        注意，第一次执行时会报关于low_cpu_mem_usage的错误，此时我们点击进入\peft\mapping.py这个文件中，
-        将"peft_model = tuner_cls(model, peft_config, adapter_name=adapter_name, low_cpu_mem_usage=low_cpu_mem_usage)"修
-        改为"peft_model = tuner_cls(model, peft_config, adapter_name=adapter_name)"即可
-        """
+        
         model.add_adapter(lora_config, adapter_name=config.lora_type)
     print(f'LoRA model:\n{model}')
 
-    """
-    值得注意的是optimizer的定义必须要放在peft.get_peft_model(model, lora_config)的后面，否则会报错！
-    """
+   
     no_decay = ["bias", "LayerNorm.weight"]
     optimizer_grouped_parameters = [
         {
