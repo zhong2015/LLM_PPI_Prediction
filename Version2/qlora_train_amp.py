@@ -132,7 +132,7 @@ def train_model(config, template, known_template, query_template, label_template
 
     cur_time = time.time()
     best_eval_loss = float('inf')
-    print('开始训练：')
+    print('Begin to train：')
     for epoch in range(config.epochs):
         running_loss = []
         best_save_step = 0
@@ -146,15 +146,9 @@ def train_model(config, template, known_template, query_template, label_template
                                  attention_mask=batch['attention_mask'].to(dtype=torch.long, device=config.device),
                                  labels=batch['labels'].to(dtype=torch.long, device=config.device)).loss
             scaler.scale(loss).backward()
-            """
-            config.gradient_accumulation_flag=True开启梯度累计的方式来节省显存
-            可以看出，梯度累计的方式实际上就是只有在特定step时才会更新模型参数和学习率
-            """
+           
             if config.gradient_accumulation_flag:
                 if cur_step % config.gradient_accumulation_steps == 0 or cur_step == len(train_dataloader):
-                    """
-                    由于此时使用了梯度累计，故这里使用梯度裁剪，来避免梯度爆炸
-                    """
                     torch.nn.utils.clip_grad_norm_(model.parameters(), config.max_grad_norm)
                     scaler.step(optimizer)
                     scaler.update()
@@ -177,7 +171,6 @@ def train_model(config, template, known_template, query_template, label_template
                                 config.logging_steps / time_diff)))))
                 cur_time = time.time()
             if (cur_step + 1) % config.valid_steps == 0:
-                print("开始跑验证集了.....")
                 eval_loss = evaluate_model(config, model, val_dataloader)
                 print("Evaluation Loss: %.5f" % (eval_loss))
                 if eval_loss < best_eval_loss:
@@ -193,7 +186,7 @@ def train_model(config, template, known_template, query_template, label_template
             if (epoch + 1) == 1 and cur_step >= 2:
                 gc.collect()
                 torch.cuda.empty_cache()
-    print('训练结束')
+    print('End')
 
 
 if __name__ == '__main__':
