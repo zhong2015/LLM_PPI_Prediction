@@ -4,7 +4,7 @@ import torch
 
 class ProjectConfig(object):
     def __init__(self):
-        self.device = 'cuda' if torch.cuda.is_available() else 'cpu'  # windows电脑/linux服务器
+        self.device = 'cuda' if torch.cuda.is_available() else 'cpu'  
         self.pre_model = r'D:\downloaded_LLM\metamath-mistral-7B'
         self.trainfile_path = r'C:\\Users\\zhong\\Desktop\\DS\\DS_nonnegatve_CPU Server\\1_zyr_224308_train.txt'
         self.valfile_path = r'C:\\Users\\zhong\\Desktop\\DS\\DS_nonnegatve_CPU Server\\1_zyr_224308_val.txt'
@@ -35,4 +35,4 @@ class ProjectConfig(object):
         self.logging_steps = 20
         self.valid_steps = 800
         self.non_save_count = 2
-        self.save_dir = r'D:\博士后期间\稳工\重要已读的知识\LLM\LLM-Codes\LLM_SHDI\checkpoints'
+        self.save_dir = r'D:\LLM\LLM-Codes\LLM_SHDI\checkpoints'
